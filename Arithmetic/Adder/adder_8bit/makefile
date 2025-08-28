@@ -14,15 +14,23 @@
 # clean:
 # 		rm -rf *.log  csrc  simv*  *.key *.vpd  DVEfiles coverage *.vdb output.txt
 
-.PHONY: compile sim clean
+.PHONY: compile sim yosys visualize clean 
 
 TEST_DESIGN = adder_8bit
 
-compile:
+OSS_CAD_SUITE_PATH = C:\Users\13862\oss-cad-suite
+
+compile: 
 	iverilog -g2012 -Wall -o simv $(TEST_DESIGN).v testbench.v
 
 sim: compile
 	vvp simv > run.log
 
+yosys: sim
+	@call $(OSS_CAD_SUITE_PATH)\environment.bat && yosys -p "read_verilog $(TEST_DESIGN).v; synth; write_json $(TEST_DESIGN).json"
+
+visualize: yosys
+	netlistsvg $(TEST_DESIGN).json -o $(TEST_DESIGN).svg
+
 clean:
-	del /Q simv.* run.log *.vcd 2>nul || true
+	del /Q simv.* run.log *.vcd *.json *.svg 2>nul || true
